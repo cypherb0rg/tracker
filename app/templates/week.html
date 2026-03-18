@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="week-view">
+    <div class="week-header">
+        <h2>{{ week.title }}</h2>
+        <p class="week-meta">{{ week.date_range }} | Phase {{ phase.number }}: {{ phase.title }}</p>
+    </div>
+
+    <div class="day-blocks">
+        {% for block in day_blocks %}
+            <div class="day-block" id="block-{{ block.id }}">
+                <div class="block-header">
+                    <h3>{{ block.title }}</h3>
+                    <span class="block-time">{{ block.estimated_time }}</span>
+                </div>
+
+                <div class="items-by-type">
+                    {% set learning_items = block.checklist_items|selectattr('item_type', 'equalto', 'learning')|list %}
+                    {% set leetcode_items = block.checklist_items|selectattr('item_type', 'equalto', 'leetcode')|list %}
+                    {% set hackerrank_items = block.checklist_items|selectattr('item_type', 'equalto', 'hackerrank')|list %}
+                    {% set review_items = block.checklist_items|selectattr('item_type', 'equalto', 'review')|list %}
+
+                    {% if learning_items %}
+                        <div class="items-section learning-section">
+                            <h4>📚 Learning</h4>
+                            <ul class="checklist">
+                                {% for item in learning_items|sort(attribute='sort_order') %}
+                                    <li class="checklist-item">
+                                        <label>
+                                            <input type="checkbox"
+                                                   class="item-checkbox"
+                                                   data-id="{{ item.id }}"
+                                                   {% if item.is_checked %}checked{% endif %}
+                                                   onchange="toggleItem({{ item.id }})">
+                                            {% if item.url %}
+                                                <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
+                                            {% else %}
+                                                <span>{{ item.label }}</span>
+                                            {% endif %}
+                                        </label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if leetcode_items %}
+                        <div class="items-section leetcode-section">
+                            <h4>🔗 LeetCode</h4>
+                            <ul class="checklist">
+                                {% for item in leetcode_items|sort(attribute='sort_order') %}
+                                    <li class="checklist-item">
+                                        <label>
+                                            <input type="checkbox"
+                                                   class="item-checkbox"
+                                                   data-id="{{ item.id }}"
+                                                   {% if item.is_checked %}checked{% endif %}
+                                                   onchange="toggleItem({{ item.id }})">
+                                            {% if item.url %}
+                                                <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
+                                            {% else %}
+                                                <span>{{ item.label }}</span>
+                                            {% endif %}
+                                            {% if item.difficulty %}
+                                                <span class="difficulty {{ item.difficulty|lower }}">{{ item.difficulty }}</span>
+                                            {% endif %}
+                                        </label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if hackerrank_items %}
+                        <div class="items-section hackerrank-section">
+                            <h4>🎯 HackerRank</h4>
+                            <ul class="checklist">
+                                {% for item in hackerrank_items|sort(attribute='sort_order') %}
+                                    <li class="checklist-item">
+                                        <label>
+                                            <input type="checkbox"
+                                                   class="item-checkbox"
+                                                   data-id="{{ item.id }}"
+                                                   {% if item.is_checked %}checked{% endif %}
+                                                   onchange="toggleItem({{ item.id }})">
+                                            {% if item.url %}
+                                                <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
+                                            {% else %}
+                                                <span>{{ item.label }}</span>
+                                            {% endif %}
+                                            {% if item.difficulty %}
+                                                <span class="difficulty {{ item.difficulty|lower }}">{{ item.difficulty }}</span>
+                                            {% endif %}
+                                        </label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if review_items %}
+                        <div class="items-section review-section">
+                            <h4>🔄 Review</h4>
+                            <ul class="checklist">
+                                {% for item in review_items|sort(attribute='sort_order') %}
+                                    <li class="checklist-item">
+                                        <label>
+                                            <input type="checkbox"
+                                                   class="item-checkbox"
+                                                   data-id="{{ item.id }}"
+                                                   {% if item.is_checked %}checked{% endif %}
+                                                   onchange="toggleItem({{ item.id }})">
+                                            {% if item.url %}
+                                                <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
+                                            {% else %}
+                                                <span>{{ item.label }}</span>
+                                            {% endif %}
+                                        </label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="reflection-section">
+                    <label for="reflection-{{ block.id }}">📝 Reflection / Notes:</label>
+                    <textarea id="reflection-{{ block.id }}"
+                              class="reflection-textarea"
+                              data-block-id="{{ block.id }}"
+                              placeholder="Write your thoughts, challenges, and takeaways...">{{ block.reflection }}</textarea>
+                    <span class="save-status" id="status-{{ block.id }}"></span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

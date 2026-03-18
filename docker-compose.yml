@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dsa_tracker_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dsa_tracker}
+      POSTGRES_USER: ${POSTGRES_USER:-tracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tracker_secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracker -d dsa_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  web:
+    build: ./app
+    container_name: dsa_tracker_web
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tracker}:${POSTGRES_PASSWORD:-tracker_secret}@db:5432/${POSTGRES_DB:-dsa_tracker}
+      FLASK_APP: app.py
+      FLASK_ENV: ${FLASK_ENV:-development}
+    ports:
+      - "8080:5000"
+    volumes:
+      - ./app:/app
+    command: /bin/sh -c "python seed.py && gunicorn --bind 0.0.0.0:5000 --reload app:app"
+
+volumes:
+  postgres_data:

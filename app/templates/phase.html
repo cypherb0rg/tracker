@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="phase-view">
+    <div class="phase-header">
+        <h2>Phase {{ phase.number }}: {{ phase.title }}</h2>
+        <p class="phase-meta">
+            📅 {{ phase.date_range }} |
+            🎯 {{ phase.target_problems }} problems |
+            ⏱️ {{ phase.estimated_hours }} hours
+        </p>
+        {% if phase.goal %}
+            <p class="phase-goal">{{ phase.goal }}</p>
+        {% endif %}
+    </div>
+
+    <div class="weeks-grid">
+        {% for week in weeks %}
+            <div class="week-card">
+                <a href="/week/{{ week.id }}" class="week-card-link">
+                    <h3>Week {{ week.number }}</h3>
+                    <p class="week-title">{{ week.title }}</p>
+                    <p class="week-date">{{ week.date_range }}</p>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if mastery_items %}
+        <section class="mastery-section">
+            <h3>✅ Phase {{ phase.number }} Mastery Checklist</h3>
+            <div class="mastery-list">
+                {% for item in mastery_items %}
+                    <label class="mastery-item">
+                        <input type="checkbox"
+                               class="mastery-checkbox"
+                               data-id="{{ item.id }}"
+                               {% if item.is_checked %}checked{% endif %}
+                               onchange="toggleMastery({{ item.id }})">
+                        <span>{{ item.label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</section>
+{% endblock %}

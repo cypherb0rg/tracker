@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="search-view">
+    <div class="search-header">
+        {% if q %}
+            <h2>{{ results|length }} result{% if results|length != 1 %}s{% endif %} for <em>{{ q }}</em></h2>
+        {% else %}
+            <h2>Search</h2>
+            <p class="search-hint">Type a topic, problem name, or concept in the search box above.</p>
+        {% endif %}
+    </div>
+
+    {% if q and results %}
+        <ul class="search-results">
+            {% for r in results %}
+                <li class="search-result-item">
+                    <a href="/week/{{ r.week.id }}#block-{{ r.block.id }}" class="result-link">
+                        <div class="result-main">
+                            <span class="result-label">{{ r.item.label }}</span>
+                            {% if r.item.difficulty %}
+                                <span class="difficulty {{ r.item.difficulty|lower }}">{{ r.item.difficulty }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="result-meta">
+                            <span class="result-type {{ r.item.item_type }}">{{ r.item.item_type }}</span>
+                            <span class="result-breadcrumb">
+                                Phase {{ r.phase.number }} · {{ r.week.title }} · {{ r.block.title }}
+                            </span>
+                        </div>
+                    </a>
+                    {% if r.item.is_checked %}
+                        <span class="result-checked" title="Completed">✓</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% elif q %}
+        <p class="search-empty">No results for <em>{{ q }}</em>. Try a shorter or different term.</p>
+    {% endif %}
+</section>
+{% endblock %}
