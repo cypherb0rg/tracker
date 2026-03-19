@@ -1,3 +1,32 @@
+// Update header timeline from API response
+function updateTimeline(tl) {
+    if (!tl) return;
+    const projected = document.querySelector('.timeline-projected');
+    if (projected) projected.textContent = tl.projected_end;
+
+    const delayEl = document.querySelector('.timeline-delay');
+    const onTrack = document.querySelector('.timeline-on-track');
+
+    if (tl.delay_days > 0) {
+        if (delayEl) {
+            delayEl.textContent = '+' + tl.delay_days + 'd';
+            delayEl.className = 'timeline-delay delay-' + tl.delay_level;
+        } else if (onTrack) {
+            // Switch from "on track" to delay badge
+            onTrack.textContent = '+' + tl.delay_days + 'd';
+            onTrack.className = 'timeline-delay delay-' + tl.delay_level;
+        }
+    } else {
+        if (delayEl) {
+            delayEl.textContent = 'on track';
+            delayEl.className = 'timeline-on-track';
+        }
+        if (onTrack) {
+            onTrack.textContent = 'on track';
+        }
+    }
+}
+
 // Toggle item checkbox via AJAX
 async function toggleItem(itemId) {
     const checkbox = document.querySelector(`input[data-id="${itemId}"]`);
@@ -6,7 +35,10 @@ async function toggleItem(itemId) {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' }
         });
-        if (!response.ok) {
+        if (response.ok) {
+            const data = await response.json();
+            updateTimeline(data.timeline);
+        } else {
             checkbox.checked = !checkbox.checked;
         }
     } catch (error) {

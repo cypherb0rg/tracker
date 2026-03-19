@@ -6,7 +6,8 @@ import sys
 import time
 from sqlalchemy.exc import OperationalError
 from app import app  # Import the single module-level app instance
-from models import db, Phase, Week, DayBlock, ChecklistItem, PhaseMastery
+from datetime import date, timedelta
+from models import db, Phase, Week, DayBlock, ChecklistItem, PhaseMastery, CourseMeta
 
 
 def seed_database():
@@ -22,6 +23,15 @@ def seed_database():
         else:
             print("ERROR: Could not connect to database after 10 attempts.")
             sys.exit(1)
+
+        # Record course start date on first run
+        if not CourseMeta.query.filter_by(key='started_at').first():
+            today = date.today()
+            db.session.add(CourseMeta(key='started_at', value=today.isoformat()))
+            # Original plan spans 104 days (March 18 to June 30)
+            planned_end = today + timedelta(days=104)
+            db.session.add(CourseMeta(key='planned_end', value=planned_end.isoformat()))
+            db.session.flush()
 
         # Phase 1: Foundation
         phase1 = get_or_create_phase(1, "Foundation", "March 18 - March 31", 30, 15)
@@ -46,7 +56,8 @@ def seed_database():
         add_checklist_item(block_toolkit.id, "learning", "itertools.combinations / permutations", "https://docs.python.org/3/library/itertools.html#itertools-recipes", "", 6)
         add_checklist_item(block_toolkit.id, "learning", "enumerate(), zip(), any(), all()", "https://docs.python.org/3/library/functions.html", "", 7)
         add_checklist_item(block_toolkit.id, "learning", "sorted(lst, key=...) and lst.sort(reverse=True)", "https://docs.python.org/3/howto/sorting.html", "", 8)
-        add_checklist_item(block_toolkit.id, "review", "Review the Priority Index and study plan", "", "", 9)
+        add_checklist_item(block_toolkit.id, "learning", "Interview pattern: always solve brute-force first, then optimize", "", "", 9)
+        add_checklist_item(block_toolkit.id, "review", "Review the Priority Index and study plan", "", "", 10)
 
         # Day 1-2
         block1_1_1 = get_or_create_day_block(
@@ -63,6 +74,7 @@ def seed_database():
         add_checklist_item(block1_1_1.id, "hackerrank", "2D Arrays - DS", "https://www.hackerrank.com/challenges/2d-arrays/problem", "Easy", 5)
         add_checklist_item(block1_1_1.id, "leetcode", "1. Two Sum", "https://leetcode.com/problems/two-sum/", "Easy", 6)
         add_checklist_item(block1_1_1.id, "leetcode", "9. Palindrome Number", "https://leetcode.com/problems/palindrome-number/", "Easy", 7)
+        add_checklist_item(block1_1_1.id, "learning", "Two Sum: implement brute-force O(n²) nested loops, then O(n) hash map", "", "", 8)
 
         # Day 3-4
         block1_1_2 = get_or_create_day_block(
@@ -80,6 +92,7 @@ def seed_database():
         add_checklist_item(block1_1_2.id, "leetcode", "3. Longest Substring Without Repeating Characters", "https://leetcode.com/problems/longest-substring-without-repeating-characters/", "Medium", 6)
         add_checklist_item(block1_1_2.id, "hackerrank", "Simple Array Sum", "https://www.hackerrank.com/challenges/simple-array-sum/problem", "Easy", 7)
         add_checklist_item(block1_1_2.id, "hackerrank", "Solve Me First", "https://www.hackerrank.com/challenges/solve-me-first/problem", "Easy", 8)
+        add_checklist_item(block1_1_2.id, "learning", "Compare brute-force O(n²) vs two-pointer O(n) on sorted input", "", "", 9)
 
         # Day 5-6
         block1_1_3 = get_or_create_day_block(
@@ -97,20 +110,34 @@ def seed_database():
         add_checklist_item(block1_1_3.id, "leetcode", "49. Group Anagrams", "https://leetcode.com/problems/group-anagrams/", "Medium", 6)
         add_checklist_item(block1_1_3.id, "hackerrank", "Counting Valleys", "https://www.hackerrank.com/challenges/counting-valleys/problem", "Easy", 7)
         add_checklist_item(block1_1_3.id, "hackerrank", "Ransom Note", "https://www.hackerrank.com/challenges/ransom-note/problem", "Easy", 8)
+        add_checklist_item(block1_1_3.id, "learning", "Valid Anagram: compare O(n log n) sorting vs O(n) Counter approach", "", "", 9)
 
         # Day 7
         block1_1_4 = get_or_create_day_block(
             week1_1.id,
             "Day 7: Big O Notation & Review",
             "Mar 24",
-            "1-2 hours",
+            "2-3 hours",
             4
         )
-        add_checklist_item(block1_1_4.id, "learning", "Time and space complexity analysis", "https://www.bigocheatsheet.com/", "", 1)
-        add_checklist_item(block1_1_4.id, "learning", "Big O cheat sheet", "https://www.bigocheatsheet.com/", "", 2)
-        add_checklist_item(block1_1_4.id, "review", "Two Sum", "https://leetcode.com/problems/two-sum/", "Easy", 3)
-        add_checklist_item(block1_1_4.id, "review", "Valid Palindrome", "https://leetcode.com/problems/valid-palindrome/", "Easy", 4)
-        add_checklist_item(block1_1_4.id, "review", "Valid Anagram", "https://leetcode.com/problems/valid-anagram/", "Easy", 5)
+        # Big O — conceptual foundations
+        add_checklist_item(block1_1_4.id, "learning", "What Big O measures: worst-case growth rate", "https://www.bigocheatsheet.com/", "", 1)
+        add_checklist_item(block1_1_4.id, "learning", "O(1) — constant time (hash lookup, array index)", "https://www.bigocheatsheet.com/", "", 2)
+        add_checklist_item(block1_1_4.id, "learning", "O(log n) — logarithmic (binary search, balanced BST)", "https://www.bigocheatsheet.com/", "", 3)
+        add_checklist_item(block1_1_4.id, "learning", "O(n) — linear (single loop, linear search)", "https://www.bigocheatsheet.com/", "", 4)
+        add_checklist_item(block1_1_4.id, "learning", "O(n log n) — linearithmic (merge sort, Tim sort)", "https://www.bigocheatsheet.com/", "", 5)
+        add_checklist_item(block1_1_4.id, "learning", "O(n²) — quadratic (nested loops, bubble sort)", "https://www.bigocheatsheet.com/", "", 6)
+        add_checklist_item(block1_1_4.id, "learning", "O(2^n) and O(n!) — exponential/factorial (subsets, permutations)", "https://www.bigocheatsheet.com/", "", 7)
+        # Big O — analysis skills
+        add_checklist_item(block1_1_4.id, "learning", "Analysing loops: single, nested, sequential", "https://www.geeksforgeeks.org/analysis-of-algorithms-set-4-analysis-of-loops/", "", 8)
+        add_checklist_item(block1_1_4.id, "learning", "Analysing recursion with recurrence relations", "https://www.geeksforgeeks.org/analysis-of-algorithms-set-4-analysis-of-loops/", "", 9)
+        add_checklist_item(block1_1_4.id, "learning", "Space complexity: auxiliary vs input space", "https://www.geeksforgeeks.org/g-fact-86/", "", 10)
+        add_checklist_item(block1_1_4.id, "learning", "Big O of Python built-ins (list, dict, set ops)", "https://wiki.python.org/moin/TimeComplexity", "", 11)
+        # Practice — analyse complexity of problems you already solved
+        add_checklist_item(block1_1_4.id, "review", "Analyse: Two Sum — what is the brute-force vs hash map complexity?", "https://leetcode.com/problems/two-sum/", "Easy", 12)
+        add_checklist_item(block1_1_4.id, "review", "Analyse: Valid Palindrome — time and space?", "https://leetcode.com/problems/valid-palindrome/", "Easy", 13)
+        add_checklist_item(block1_1_4.id, "review", "Analyse: Valid Anagram — compare sorting vs Counter approach", "https://leetcode.com/problems/valid-anagram/", "Easy", 14)
+        add_checklist_item(block1_1_4.id, "review", "Analyse: Longest Substring Without Repeating Characters — why is sliding window O(n)?", "https://leetcode.com/problems/longest-substring-without-repeating-characters/", "Medium", 15)
 
         # Phase 1, Week 2
         week1_2 = get_or_create_week(phase1.id, 2, "Week 2: Strings & Advanced Foundations", "March 25 - March 31")
@@ -126,10 +153,10 @@ def seed_database():
         add_checklist_item(block1_2_1.id, "learning", "String methods in Python", "https://docs.python.org/3/library/stdtypes.html#string-methods", "", 1)
         add_checklist_item(block1_2_1.id, "learning", "String immutability", "https://realpython.com/python-strings/", "", 2)
         add_checklist_item(block1_2_1.id, "learning", "Common string patterns", "https://realpython.com/python-strings/", "", 3)
-        add_checklist_item(block1_2_1.id, "leetcode", "20. Valid Parentheses", "https://leetcode.com/problems/valid-parentheses/", "Easy", 4)
+        add_checklist_item(block1_2_1.id, "leetcode", "344. Reverse String", "https://leetcode.com/problems/reverse-string/", "Easy", 4)
         add_checklist_item(block1_2_1.id, "leetcode", "14. Longest Common Prefix", "https://leetcode.com/problems/longest-common-prefix/", "Easy", 5)
         add_checklist_item(block1_2_1.id, "leetcode", "5. Longest Palindromic Substring", "https://leetcode.com/problems/longest-palindromic-substring/", "Medium", 6)
-        add_checklist_item(block1_2_1.id, "hackerrank", "Simple String", "https://www.hackerrank.com/challenges/simple-string/problem", "Easy", 7)
+        add_checklist_item(block1_2_1.id, "hackerrank", "Super Reduced String", "https://www.hackerrank.com/challenges/reduced-string/problem", "Easy", 7)
         add_checklist_item(block1_2_1.id, "hackerrank", "Camel Case", "https://www.hackerrank.com/challenges/camel-case/problem", "Easy", 8)
 
         # Day 3-4
@@ -359,6 +386,7 @@ def seed_database():
         add_checklist_item(block4_9_1.id, "learning", "Memoization approach", "https://www.geeksforgeeks.org/memoization-1d-2d-and-3d/", "", 1)
         add_checklist_item(block4_9_1.id, "learning", "Tabulation approach", "https://www.geeksforgeeks.org/tabulation-vs-memoization/", "", 2)
         add_checklist_item(block4_9_1.id, "learning", "State definition and transitions", "https://neetcode.io/courses/advanced-algorithms/25", "", 3)
+        add_checklist_item(block4_9_1.id, "learning", "Always start with recursive brute-force O(2^n), then add memoization O(n)", "", "", 4)
         add_checklist_item(block4_9_1.id, "leetcode", "70. Climbing Stairs", "https://leetcode.com/problems/climbing-stairs/", "Easy", 4)
         add_checklist_item(block4_9_1.id, "leetcode", "509. Fibonacci Number", "https://leetcode.com/problems/fibonacci-number/", "Easy", 5)
         add_checklist_item(block4_9_1.id, "leetcode", "121. Best Time to Buy and Sell Stock", "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/", "Easy", 6)
@@ -511,21 +539,218 @@ def seed_database():
         add_phase_mastery(phase2.id, "Stacks problems solved", 3)
         add_phase_mastery(phase2.id, "Queues with deques used", 4)
         add_phase_mastery(phase2.id, "Binary tree traversals mastered", 5)
+        add_phase_mastery(phase2.id, "Can state Big O of every solution in this phase", 6)
 
         add_phase_mastery(phase3.id, "Heaps and priority queues solid", 1)
         add_phase_mastery(phase3.id, "Graph representation understood", 2)
         add_phase_mastery(phase3.id, "DFS and BFS implemented", 3)
         add_phase_mastery(phase3.id, "Trie implemented", 4)
+        add_phase_mastery(phase3.id, "Can compare time complexity of BFS vs DFS vs Dijkstra", 5)
 
         add_phase_mastery(phase4.id, "DP memoization solid", 1)
         add_phase_mastery(phase4.id, "DP tabulation solid", 2)
         add_phase_mastery(phase4.id, "Backtracking pattern mastered", 3)
         add_phase_mastery(phase4.id, "N-Queens solved", 4)
+        add_phase_mastery(phase4.id, "Can explain DP time/space trade-offs (memo vs tabulation vs space-optimised)", 5)
 
         add_phase_mastery(phase5.id, "Practice Round 1 completed", 1)
         add_phase_mastery(phase5.id, "Practice Round 2 completed", 2)
         add_phase_mastery(phase5.id, "Practice Round 3 completed", 3)
         add_phase_mastery(phase5.id, "Full mastery achieved", 4)
+
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # FAST TRACK — most-asked interview questions only
+        # Each problem covers brute-force AND optimal solution
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        # ── Phase 6: Fast Track — Core Patterns ─────────────
+        ft1 = get_or_create_phase(6, "Fast Track — Core Patterns", "4 weeks", 25, 12)
+        ft1.goal = "Cover the 30 most-asked interview problems with brute-force and optimal solutions"
+
+        # ── Week 15: Arrays, Hash Maps, Two Pointers & Sliding Window
+        ft_w15 = get_or_create_week(ft1.id, 15, "Week 15: Arrays & Hash Maps", "")
+
+        ft_b15_1 = get_or_create_day_block(ft_w15.id, "Day 1-2: Arrays & Hash Maps", "", "3-4 hours", 1)
+        add_checklist_item(ft_b15_1.id, "learning", "Brute-force: nested loops O(n²) — try every pair", "https://www.geeksforgeeks.org/check-if-pair-with-given-sum-exists-in-array/", "", 1)
+        add_checklist_item(ft_b15_1.id, "learning", "Optimal: hash map O(n) — single pass lookup", "https://www.geeksforgeeks.org/check-if-pair-with-given-sum-exists-in-array/", "", 2)
+        add_checklist_item(ft_b15_1.id, "leetcode", "1. Two Sum", "https://leetcode.com/problems/two-sum/", "Easy", 3)
+        add_checklist_item(ft_b15_1.id, "learning", "Brute-force: sort + compare neighbours O(n log n) or nested O(n²)", "https://www.geeksforgeeks.org/find-duplicates-in-on-time-and-constant-extra-space/", "", 4)
+        add_checklist_item(ft_b15_1.id, "learning", "Optimal: hash set O(n) — single pass", "https://www.geeksforgeeks.org/find-duplicates-in-on-time-and-constant-extra-space/", "", 5)
+        add_checklist_item(ft_b15_1.id, "leetcode", "217. Contains Duplicate", "https://leetcode.com/problems/contains-duplicate/", "Easy", 6)
+        add_checklist_item(ft_b15_1.id, "learning", "Brute-force: sort both strings O(n log n)", "https://www.geeksforgeeks.org/check-whether-two-strings-are-anagram-of-each-other/", "", 7)
+        add_checklist_item(ft_b15_1.id, "learning", "Optimal: Counter / frequency array O(n)", "https://www.geeksforgeeks.org/check-whether-two-strings-are-anagram-of-each-other/", "", 8)
+        add_checklist_item(ft_b15_1.id, "leetcode", "242. Valid Anagram", "https://leetcode.com/problems/valid-anagram/", "Easy", 9)
+        add_checklist_item(ft_b15_1.id, "learning", "Brute-force: compare all pairs of strings O(n² · k)", "https://www.geeksforgeeks.org/given-a-sequence-of-words-print-all-anagrams-together/", "", 10)
+        add_checklist_item(ft_b15_1.id, "learning", "Optimal: sorted-string key in hash map O(n · k log k)", "https://www.geeksforgeeks.org/given-a-sequence-of-words-print-all-anagrams-together/", "", 11)
+        add_checklist_item(ft_b15_1.id, "leetcode", "49. Group Anagrams", "https://leetcode.com/problems/group-anagrams/", "Medium", 12)
+        add_checklist_item(ft_b15_1.id, "learning", "Brute-force: count frequency + sort O(n log n)", "https://www.geeksforgeeks.org/find-k-numbers-occurrences-given-array/", "", 13)
+        add_checklist_item(ft_b15_1.id, "learning", "Optimal: bucket sort O(n)", "https://www.geeksforgeeks.org/find-k-numbers-occurrences-given-array/", "", 14)
+        add_checklist_item(ft_b15_1.id, "leetcode", "347. Top K Frequent Elements", "https://leetcode.com/problems/top-k-frequent-elements/", "Medium", 15)
+        add_checklist_item(ft_b15_1.id, "learning", "Brute-force: nested loop multiply all except self O(n²)", "https://www.geeksforgeeks.org/a-product-array-puzzle/", "", 16)
+        add_checklist_item(ft_b15_1.id, "learning", "Optimal: prefix/suffix products O(n) no division", "https://www.geeksforgeeks.org/a-product-array-puzzle/", "", 17)
+        add_checklist_item(ft_b15_1.id, "leetcode", "238. Product of Array Except Self", "https://leetcode.com/problems/product-of-array-except-self/", "Medium", 18)
+
+        ft_b15_2 = get_or_create_day_block(ft_w15.id, "Day 3-4: Two Pointers & Sliding Window", "", "3-4 hours", 2)
+        add_checklist_item(ft_b15_2.id, "learning", "Brute-force: reverse + compare new string O(n) extra space", "https://www.geeksforgeeks.org/check-if-a-number-is-palindrome/", "", 1)
+        add_checklist_item(ft_b15_2.id, "learning", "Optimal: two pointers inward O(n) O(1) space", "https://www.geeksforgeeks.org/check-if-a-number-is-palindrome/", "", 2)
+        add_checklist_item(ft_b15_2.id, "leetcode", "125. Valid Palindrome", "https://leetcode.com/problems/valid-palindrome/", "Easy", 3)
+        add_checklist_item(ft_b15_2.id, "learning", "Brute-force: triple nested loops O(n³)", "https://www.geeksforgeeks.org/find-a-triplet-that-sum-to-a-given-value/", "", 4)
+        add_checklist_item(ft_b15_2.id, "learning", "Optimal: sort + two pointers O(n²), skip duplicates", "https://www.geeksforgeeks.org/find-a-triplet-that-sum-to-a-given-value/", "", 5)
+        add_checklist_item(ft_b15_2.id, "leetcode", "15. 3Sum", "https://leetcode.com/problems/3sum/", "Medium", 6)
+        add_checklist_item(ft_b15_2.id, "learning", "Brute-force: check every pair of lines O(n²)", "https://www.geeksforgeeks.org/container-with-most-water/", "", 7)
+        add_checklist_item(ft_b15_2.id, "learning", "Optimal: two pointers from edges inward O(n)", "https://www.geeksforgeeks.org/container-with-most-water/", "", 8)
+        add_checklist_item(ft_b15_2.id, "leetcode", "11. Container With Most Water", "https://leetcode.com/problems/container-with-most-water/", "Medium", 9)
+        add_checklist_item(ft_b15_2.id, "learning", "Brute-force: check every buy-sell pair O(n²)", "https://www.geeksforgeeks.org/stock-buy-sell/", "", 10)
+        add_checklist_item(ft_b15_2.id, "learning", "Optimal: track min price, single pass O(n)", "https://www.geeksforgeeks.org/stock-buy-sell/", "", 11)
+        add_checklist_item(ft_b15_2.id, "leetcode", "121. Best Time to Buy and Sell Stock", "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/", "Easy", 12)
+        add_checklist_item(ft_b15_2.id, "learning", "Brute-force: check every substring O(n³)", "https://www.geeksforgeeks.org/length-of-the-longest-substring-without-repeating-characters/", "", 13)
+        add_checklist_item(ft_b15_2.id, "learning", "Optimal: sliding window + set O(n)", "https://www.geeksforgeeks.org/length-of-the-longest-substring-without-repeating-characters/", "", 14)
+        add_checklist_item(ft_b15_2.id, "leetcode", "3. Longest Substring Without Repeating Characters", "https://leetcode.com/problems/longest-substring-without-repeating-characters/", "Medium", 15)
+
+        ft_b15_3 = get_or_create_day_block(ft_w15.id, "Day 5-7: Stacks & Binary Search", "", "3-4 hours", 3)
+        add_checklist_item(ft_b15_3.id, "learning", "Stack approach: push open, pop on close, check match O(n)", "https://www.geeksforgeeks.org/check-for-balanced-parentheses-in-an-expression/", "", 1)
+        add_checklist_item(ft_b15_3.id, "leetcode", "20. Valid Parentheses", "https://leetcode.com/problems/valid-parentheses/", "Easy", 2)
+        add_checklist_item(ft_b15_3.id, "learning", "Brute-force: scan stack for min O(n) per getMin call", "https://www.geeksforgeeks.org/design-a-stack-that-supports-getmin-in-o1-time-and-o1-extra-space/", "", 3)
+        add_checklist_item(ft_b15_3.id, "learning", "Optimal: auxiliary min-stack O(1) getMin", "https://www.geeksforgeeks.org/design-a-stack-that-supports-getmin-in-o1-time-and-o1-extra-space/", "", 4)
+        add_checklist_item(ft_b15_3.id, "leetcode", "155. Min Stack", "https://leetcode.com/problems/min-stack/", "Medium", 5)
+        add_checklist_item(ft_b15_3.id, "learning", "Brute-force: linear scan O(n)", "https://www.geeksforgeeks.org/linear-search/", "", 6)
+        add_checklist_item(ft_b15_3.id, "learning", "Optimal: binary search O(log n)", "https://www.geeksforgeeks.org/binary-search/", "", 7)
+        add_checklist_item(ft_b15_3.id, "leetcode", "704. Binary Search", "https://leetcode.com/problems/binary-search/", "Easy", 8)
+        add_checklist_item(ft_b15_3.id, "learning", "Brute-force: linear scan O(n)", "https://www.geeksforgeeks.org/search-an-element-in-a-sorted-and-pivoted-array/", "", 9)
+        add_checklist_item(ft_b15_3.id, "learning", "Optimal: modified binary search on rotated array O(log n)", "https://www.geeksforgeeks.org/search-an-element-in-a-sorted-and-pivoted-array/", "", 10)
+        add_checklist_item(ft_b15_3.id, "leetcode", "33. Search in Rotated Sorted Array", "https://leetcode.com/problems/search-in-rotated-sorted-array/", "Medium", 11)
+
+        # ── Week 16: Linked Lists & Trees
+        ft_w16 = get_or_create_week(ft1.id, 16, "Week 16: Linked Lists & Trees", "")
+
+        ft_b16_1 = get_or_create_day_block(ft_w16.id, "Day 1-2: Linked Lists", "", "2-3 hours", 1)
+        add_checklist_item(ft_b16_1.id, "learning", "Iterative reversal O(n) O(1) space", "https://www.geeksforgeeks.org/reverse-a-linked-list/", "", 1)
+        add_checklist_item(ft_b16_1.id, "learning", "Recursive reversal O(n) O(n) call stack", "https://www.geeksforgeeks.org/reverse-a-linked-list/", "", 2)
+        add_checklist_item(ft_b16_1.id, "leetcode", "206. Reverse Linked List", "https://leetcode.com/problems/reverse-linked-list/", "Easy", 3)
+        add_checklist_item(ft_b16_1.id, "learning", "Iterative merge with dummy node O(n+m)", "https://www.geeksforgeeks.org/merge-two-sorted-linked-lists/", "", 4)
+        add_checklist_item(ft_b16_1.id, "leetcode", "21. Merge Two Sorted Lists", "https://leetcode.com/problems/merge-two-sorted-lists/", "Easy", 5)
+        add_checklist_item(ft_b16_1.id, "learning", "Brute-force: store visited nodes in set O(n) space", "https://www.geeksforgeeks.org/detect-loop-in-a-linked-list/", "", 6)
+        add_checklist_item(ft_b16_1.id, "learning", "Optimal: Floyd's fast/slow pointer O(1) space", "https://www.geeksforgeeks.org/detect-loop-in-a-linked-list/", "", 7)
+        add_checklist_item(ft_b16_1.id, "leetcode", "141. Linked List Cycle", "https://leetcode.com/problems/linked-list-cycle/", "Easy", 8)
+        add_checklist_item(ft_b16_1.id, "learning", "Brute-force: two-pass (count length, then remove) O(n)", "https://www.geeksforgeeks.org/delete-nth-node-from-the-end-of-the-given-linked-list/", "", 9)
+        add_checklist_item(ft_b16_1.id, "learning", "Optimal: one-pass with two pointers n apart O(n)", "https://www.geeksforgeeks.org/delete-nth-node-from-the-end-of-the-given-linked-list/", "", 10)
+        add_checklist_item(ft_b16_1.id, "leetcode", "19. Remove Nth Node From End of List", "https://leetcode.com/problems/remove-nth-node-from-end-of-list/", "Medium", 11)
+
+        ft_b16_2 = get_or_create_day_block(ft_w16.id, "Day 3-5: Trees", "", "3-4 hours", 2)
+        add_checklist_item(ft_b16_2.id, "learning", "Recursive DFS O(n) — base case: null → 0", "https://www.geeksforgeeks.org/find-the-maximum-depth-or-height-of-a-tree/", "", 1)
+        add_checklist_item(ft_b16_2.id, "learning", "Iterative BFS with queue O(n)", "https://www.geeksforgeeks.org/level-order-tree-traversal/", "", 2)
+        add_checklist_item(ft_b16_2.id, "leetcode", "104. Maximum Depth of Binary Tree", "https://leetcode.com/problems/maximum-depth-of-binary-tree/", "Easy", 3)
+        add_checklist_item(ft_b16_2.id, "learning", "Recursive swap left/right O(n)", "https://www.geeksforgeeks.org/write-an-efficient-c-function-to-convert-a-tree-into-its-mirror-tree/", "", 4)
+        add_checklist_item(ft_b16_2.id, "leetcode", "226. Invert Binary Tree", "https://leetcode.com/problems/invert-binary-tree/", "Easy", 5)
+        add_checklist_item(ft_b16_2.id, "learning", "Brute-force: in-order traversal → check sorted array O(n) extra space", "https://www.geeksforgeeks.org/a-program-to-check-if-a-binary-tree-is-bst-or-not/", "", 6)
+        add_checklist_item(ft_b16_2.id, "learning", "Optimal: recursive with min/max bounds O(n) O(h) space", "https://www.geeksforgeeks.org/a-program-to-check-if-a-binary-tree-is-bst-or-not/", "", 7)
+        add_checklist_item(ft_b16_2.id, "leetcode", "98. Validate Binary Search Tree", "https://leetcode.com/problems/validate-binary-search-tree/", "Medium", 8)
+        add_checklist_item(ft_b16_2.id, "learning", "Brute-force: store root-to-node paths, compare O(n) space", "https://www.geeksforgeeks.org/lowest-common-ancestor-binary-tree-set-1/", "", 9)
+        add_checklist_item(ft_b16_2.id, "learning", "Optimal: single recursive traversal O(n) O(h)", "https://www.geeksforgeeks.org/lowest-common-ancestor-binary-tree-set-1/", "", 10)
+        add_checklist_item(ft_b16_2.id, "leetcode", "236. Lowest Common Ancestor of Binary Tree", "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/", "Medium", 11)
+        add_checklist_item(ft_b16_2.id, "learning", "BFS level-by-level with queue O(n)", "https://www.geeksforgeeks.org/level-order-tree-traversal/", "", 12)
+        add_checklist_item(ft_b16_2.id, "leetcode", "102. Binary Tree Level Order Traversal", "https://leetcode.com/problems/binary-tree-level-order-traversal/", "Medium", 13)
+        add_checklist_item(ft_b16_2.id, "learning", "Brute-force: check every pair of nodes O(n²)", "https://www.geeksforgeeks.org/diameter-of-a-binary-tree/", "", 14)
+        add_checklist_item(ft_b16_2.id, "learning", "Optimal: single DFS tracking diameter O(n)", "https://www.geeksforgeeks.org/diameter-of-a-binary-tree/", "", 15)
+        add_checklist_item(ft_b16_2.id, "leetcode", "543. Diameter of Binary Tree", "https://leetcode.com/problems/diameter-of-binary-tree/", "Easy", 16)
+
+        ft_b16_3 = get_or_create_day_block(ft_w16.id, "Day 6-7: Review & Timed Practice", "", "2-3 hours", 3)
+        add_checklist_item(ft_b16_3.id, "learning", "Re-solve all Easy problems without hints (10 min each)", "https://leetcode.com/problemset/", "", 1)
+        add_checklist_item(ft_b16_3.id, "learning", "Re-solve all Medium problems without hints (20 min each)", "https://leetcode.com/problemset/", "", 2)
+        add_checklist_item(ft_b16_3.id, "learning", "For each problem: state brute-force complexity, then optimal", "https://www.bigocheatsheet.com/", "", 3)
+        add_checklist_item(ft_b16_3.id, "review", "Two Sum — hash map approach", "https://leetcode.com/problems/two-sum/", "Easy", 4)
+        add_checklist_item(ft_b16_3.id, "review", "3Sum — sort + two pointers", "https://leetcode.com/problems/3sum/", "Medium", 5)
+        add_checklist_item(ft_b16_3.id, "review", "Reverse Linked List — iterative", "https://leetcode.com/problems/reverse-linked-list/", "Easy", 6)
+        add_checklist_item(ft_b16_3.id, "review", "Validate BST — recursive bounds", "https://leetcode.com/problems/validate-binary-search-tree/", "Medium", 7)
+
+        add_phase_mastery(ft1.id, "Can solve all Easy problems in <10 mins", 1)
+        add_phase_mastery(ft1.id, "Can solve all Medium problems in <25 mins", 2)
+        add_phase_mastery(ft1.id, "Can explain brute-force vs optimal for every problem", 3)
+        add_phase_mastery(ft1.id, "Can state time and space complexity without hesitation", 4)
+
+        # ── Phase 7: Fast Track — Advanced Patterns ─────────
+        ft2 = get_or_create_phase(7, "Fast Track — Advanced Patterns", "4 weeks", 20, 12)
+        ft2.goal = "Graphs, dynamic programming, and backtracking — brute-force and optimal for each"
+
+        # ── Week 17: Graphs & DP
+        ft_w17 = get_or_create_week(ft2.id, 17, "Week 17: Graphs & Dynamic Programming", "")
+
+        ft_b17_1 = get_or_create_day_block(ft_w17.id, "Day 1-3: Graphs", "", "3-4 hours", 1)
+        add_checklist_item(ft_b17_1.id, "learning", "DFS flood-fill approach O(m·n)", "https://www.geeksforgeeks.org/find-the-number-of-islands-using-dfs/", "", 1)
+        add_checklist_item(ft_b17_1.id, "learning", "BFS alternative — same complexity, different traversal order", "https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/", "", 2)
+        add_checklist_item(ft_b17_1.id, "leetcode", "200. Number of Islands", "https://leetcode.com/problems/number-of-islands/", "Medium", 3)
+        add_checklist_item(ft_b17_1.id, "learning", "Brute-force: check all paths for cycles O(V! worst case)", "https://www.geeksforgeeks.org/detect-cycle-in-a-graph/", "", 4)
+        add_checklist_item(ft_b17_1.id, "learning", "Optimal: topological sort / DFS with states O(V+E)", "https://www.geeksforgeeks.org/detect-cycle-in-a-graph/", "", 5)
+        add_checklist_item(ft_b17_1.id, "leetcode", "207. Course Schedule", "https://leetcode.com/problems/course-schedule/", "Medium", 6)
+        add_checklist_item(ft_b17_1.id, "learning", "BFS/DFS clone with visited hash map O(V+E)", "https://www.geeksforgeeks.org/clone-an-undirected-graph/", "", 7)
+        add_checklist_item(ft_b17_1.id, "leetcode", "133. Clone Graph", "https://leetcode.com/problems/clone-graph/", "Medium", 8)
+        add_checklist_item(ft_b17_1.id, "learning", "Brute-force: BFS from every node O(V·(V+E))", "https://www.geeksforgeeks.org/minimum-time-required-so-that-all-oranges-become-rotten/", "", 9)
+        add_checklist_item(ft_b17_1.id, "learning", "Optimal: multi-source BFS O(V+E)", "https://www.geeksforgeeks.org/minimum-time-required-so-that-all-oranges-become-rotten/", "", 10)
+        add_checklist_item(ft_b17_1.id, "leetcode", "994. Rotting Oranges", "https://leetcode.com/problems/rotting-oranges/", "Medium", 11)
+
+        ft_b17_2 = get_or_create_day_block(ft_w17.id, "Day 4-7: Dynamic Programming", "", "4-5 hours", 2)
+        add_checklist_item(ft_b17_2.id, "learning", "Brute-force: recursion O(2^n) — two branches per step", "https://www.geeksforgeeks.org/count-ways-reach-nth-stair/", "", 1)
+        add_checklist_item(ft_b17_2.id, "learning", "Optimal: DP or two variables O(n) O(1) space", "https://www.geeksforgeeks.org/count-ways-reach-nth-stair/", "", 2)
+        add_checklist_item(ft_b17_2.id, "leetcode", "70. Climbing Stairs", "https://leetcode.com/problems/climbing-stairs/", "Easy", 3)
+        add_checklist_item(ft_b17_2.id, "learning", "Brute-force: try all combinations O(S^n) recursion", "https://www.geeksforgeeks.org/coin-change-dp-7/", "", 4)
+        add_checklist_item(ft_b17_2.id, "learning", "Optimal: bottom-up DP table O(S·n) where S=amount, n=coins", "https://www.geeksforgeeks.org/coin-change-dp-7/", "", 5)
+        add_checklist_item(ft_b17_2.id, "leetcode", "322. Coin Change", "https://leetcode.com/problems/coin-change/", "Medium", 6)
+        add_checklist_item(ft_b17_2.id, "learning", "Brute-force: try rob/skip every house O(2^n)", "https://www.geeksforgeeks.org/find-maximum-possible-stolen-value-houses/", "", 7)
+        add_checklist_item(ft_b17_2.id, "learning", "Optimal: DP with two variables O(n) O(1) space", "https://www.geeksforgeeks.org/find-maximum-possible-stolen-value-houses/", "", 8)
+        add_checklist_item(ft_b17_2.id, "leetcode", "198. House Robber", "https://leetcode.com/problems/house-robber/", "Medium", 9)
+        add_checklist_item(ft_b17_2.id, "learning", "Brute-force: check all subsequences O(2^n)", "https://www.geeksforgeeks.org/longest-increasing-subsequence-dp-3/", "", 10)
+        add_checklist_item(ft_b17_2.id, "learning", "DP: O(n²) table, Optimal: O(n log n) with binary search", "https://www.geeksforgeeks.org/longest-increasing-subsequence-dp-3/", "", 11)
+        add_checklist_item(ft_b17_2.id, "leetcode", "300. Longest Increasing Subsequence", "https://leetcode.com/problems/longest-increasing-subsequence/", "Medium", 12)
+        add_checklist_item(ft_b17_2.id, "learning", "Brute-force: try every partition O(2^n)", "https://www.geeksforgeeks.org/word-break-problem-dp-32/", "", 13)
+        add_checklist_item(ft_b17_2.id, "learning", "Optimal: DP with word set O(n²) or O(n·m)", "https://www.geeksforgeeks.org/word-break-problem-dp-32/", "", 14)
+        add_checklist_item(ft_b17_2.id, "leetcode", "139. Word Break", "https://leetcode.com/problems/word-break/", "Medium", 15)
+        add_checklist_item(ft_b17_2.id, "learning", "Brute-force: try all buy/sell with cooldown O(2^n)", "https://www.geeksforgeeks.org/maximum-profit-by-buying-and-selling-a-share-at-most-twice/", "", 16)
+        add_checklist_item(ft_b17_2.id, "learning", "Optimal: state machine DP O(n) — hold/sold/rest", "https://www.geeksforgeeks.org/stock-buy-sell/-with-cooldown", "", 17)
+        add_checklist_item(ft_b17_2.id, "leetcode", "309. Best Time to Buy and Sell Stock with Cooldown", "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/", "Medium", 18)
+
+        # ── Week 18: Backtracking & Final Review
+        ft_w18 = get_or_create_week(ft2.id, 18, "Week 18: Backtracking & Final Review", "")
+
+        ft_b18_1 = get_or_create_day_block(ft_w18.id, "Day 1-3: Backtracking", "", "3-4 hours", 1)
+        add_checklist_item(ft_b18_1.id, "learning", "Brute-force: iterative bit-mask enumerate all 2^n subsets", "https://www.geeksforgeeks.org/backtracking-to-find-all-subsets/", "", 1)
+        add_checklist_item(ft_b18_1.id, "learning", "Backtracking: recursive include/exclude pattern O(2^n)", "https://www.geeksforgeeks.org/backtracking-to-find-all-subsets/", "", 2)
+        add_checklist_item(ft_b18_1.id, "leetcode", "78. Subsets", "https://leetcode.com/problems/subsets/", "Medium", 3)
+        add_checklist_item(ft_b18_1.id, "learning", "Brute-force: generate all n! permutations iteratively", "https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/", "", 4)
+        add_checklist_item(ft_b18_1.id, "learning", "Backtracking: swap-based or used-array approach O(n·n!)", "https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/", "", 5)
+        add_checklist_item(ft_b18_1.id, "leetcode", "46. Permutations", "https://leetcode.com/problems/permutations/", "Medium", 6)
+        add_checklist_item(ft_b18_1.id, "learning", "Backtracking with pruning: skip if remainder < candidate", "https://www.geeksforgeeks.org/combinational-sum/", "", 7)
+        add_checklist_item(ft_b18_1.id, "leetcode", "39. Combination Sum", "https://leetcode.com/problems/combination-sum/", "Medium", 8)
+        add_checklist_item(ft_b18_1.id, "learning", "Brute-force: try every cell as start, recurse O(m·n·4^L)", "https://www.geeksforgeeks.org/search-a-word-in-a-2d-grid-of-characters/", "", 9)
+        add_checklist_item(ft_b18_1.id, "learning", "Optimised: backtrack with visited set, early termination", "https://www.geeksforgeeks.org/search-a-word-in-a-2d-grid-of-characters/", "", 10)
+        add_checklist_item(ft_b18_1.id, "leetcode", "79. Word Search", "https://leetcode.com/problems/word-search/", "Medium", 11)
+
+        ft_b18_2 = get_or_create_day_block(ft_w18.id, "Day 4-5: Sorting & Greedy (Bonus)", "", "2-3 hours", 2)
+        add_checklist_item(ft_b18_2.id, "learning", "Brute-force: check all interval pairs O(n²)", "https://www.geeksforgeeks.org/merging-intervals/", "", 1)
+        add_checklist_item(ft_b18_2.id, "learning", "Optimal: sort by start + merge O(n log n)", "https://www.geeksforgeeks.org/merging-intervals/", "", 2)
+        add_checklist_item(ft_b18_2.id, "leetcode", "56. Merge Intervals", "https://leetcode.com/problems/merge-intervals/", "Medium", 3)
+        add_checklist_item(ft_b18_2.id, "learning", "Brute-force: try all insertion positions O(n²)", "https://www.geeksforgeeks.org/insert-in-sorted-and-non-overlapping-interval-array/", "", 4)
+        add_checklist_item(ft_b18_2.id, "learning", "Optimal: binary search insert position + merge O(n)", "https://www.geeksforgeeks.org/insert-in-sorted-and-non-overlapping-interval-array/", "", 5)
+        add_checklist_item(ft_b18_2.id, "leetcode", "57. Insert Interval", "https://leetcode.com/problems/insert-interval/", "Medium", 6)
+        add_checklist_item(ft_b18_2.id, "learning", "Greedy: sort by end time, count non-overlapping O(n log n)", "https://www.geeksforgeeks.org/maximal-disjoint-intervals/", "", 7)
+        add_checklist_item(ft_b18_2.id, "leetcode", "435. Non-overlapping Intervals", "https://leetcode.com/problems/non-overlapping-intervals/", "Medium", 8)
+
+        ft_b18_3 = get_or_create_day_block(ft_w18.id, "Day 6-7: Fast Track Final Review", "", "3-4 hours", 3)
+        add_checklist_item(ft_b18_3.id, "learning", "Timed: solve 3 random Easy in 30 mins total", "https://leetcode.com/problemset/?difficulty=EASY", "", 1)
+        add_checklist_item(ft_b18_3.id, "learning", "Timed: solve 3 random Medium in 75 mins total", "https://leetcode.com/problemset/?difficulty=MEDIUM", "", 2)
+        add_checklist_item(ft_b18_3.id, "learning", "For each: state brute-force approach + complexity first", "https://www.bigocheatsheet.com/", "", 3)
+        add_checklist_item(ft_b18_3.id, "learning", "For each: then state optimal approach + complexity", "https://www.bigocheatsheet.com/", "", 4)
+        add_checklist_item(ft_b18_3.id, "learning", "Practice: explain your approach out loud as you code", "https://www.techinterviewhandbook.org/coding-interview-rubrics/", "", 5)
+        add_checklist_item(ft_b18_3.id, "review", "Two Sum", "https://leetcode.com/problems/two-sum/", "Easy", 6)
+        add_checklist_item(ft_b18_3.id, "review", "Coin Change", "https://leetcode.com/problems/coin-change/", "Medium", 7)
+        add_checklist_item(ft_b18_3.id, "review", "Number of Islands", "https://leetcode.com/problems/number-of-islands/", "Medium", 8)
+        add_checklist_item(ft_b18_3.id, "review", "Subsets", "https://leetcode.com/problems/subsets/", "Medium", 9)
+        add_checklist_item(ft_b18_3.id, "review", "Merge Intervals", "https://leetcode.com/problems/merge-intervals/", "Medium", 10)
+
+        add_phase_mastery(ft2.id, "Graphs: DFS/BFS/topological sort understood", 1)
+        add_phase_mastery(ft2.id, "DP: can convert brute-force recursion to memoization to tabulation", 2)
+        add_phase_mastery(ft2.id, "Backtracking: can identify and apply the pattern", 3)
+        add_phase_mastery(ft2.id, "Can explain brute-force AND optimal for every Fast Track problem", 4)
+        add_phase_mastery(ft2.id, "Can solve any Fast Track problem from scratch in interview time", 5)
 
         db.session.commit()
         print("✓ Database seeded successfully!")

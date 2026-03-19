@@ -70,6 +70,17 @@ class ChecklistItem(db.Model):
         return f'<ChecklistItem {self.label}>'
 
 
+class CourseMeta(db.Model):
+    __tablename__ = 'course_meta'
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), nullable=False, unique=True)
+    value = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f'<CourseMeta {self.key}={self.value}>'
+
+
 class PhaseMastery(db.Model):
     __tablename__ = 'phase_mastery'
 

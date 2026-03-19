@@ -45,6 +45,21 @@
                         <span class="progress-text">{{ progress }}%</span>
                     </div>
                 {% endif %}
+                {% if timeline %}
+                    <div class="timeline-info">
+                        <span class="timeline-dates">
+                            {{ timeline.started_at.strftime('%b %d') }} &rarr;
+                            <span class="timeline-projected">{{ timeline.projected_end.strftime('%b %d, %Y') }}</span>
+                        </span>
+                        {% if timeline.delay_days > 0 %}
+                            <span class="timeline-delay delay-{{ timeline.delay_level }}">
+                                +{{ timeline.delay_days }}d
+                            </span>
+                        {% else %}
+                            <span class="timeline-on-track">on track</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
         </header>
 

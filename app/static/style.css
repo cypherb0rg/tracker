@@ -175,6 +175,64 @@ header {
     flex-shrink: 0;
 }
 
+/* ─── Timeline Info ──────────────────────────────────── */
+.timeline-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.timeline-dates {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-sidebar-muted);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.timeline-projected {
+    color: var(--text-sidebar);
+    font-weight: 500;
+}
+
+.timeline-delay {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.timeline-delay.delay-none {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.12);
+}
+
+.timeline-delay.delay-yellow {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.18);
+}
+
+.timeline-delay.delay-red {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.18);
+}
+
+.timeline-on-track {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    white-space: nowrap;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.12);
+}
+
 /* ─── Theme Toggle ───────────────────────────────────── */
 .theme-switch {
     display: flex;
@@ -878,4 +936,5 @@ header {
     .main-content { padding: 1.25rem; }
     .search-input { width: 140px; }
     .search-input:focus { width: 160px; }
+    .timeline-info { display: none; }
 }
