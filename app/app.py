@@ -30,7 +30,12 @@ def create_app():
         return phases
 
     def get_timeline():
-        """Calculate projected finish date and delay based on progress."""
+        """Calculate projected finish date and delay based on progress.
+
+        Uses the planned rate (total_items / planned_days) as the baseline.
+        Measures how many items you should have done by today vs how many
+        you actually did, then shifts the projected end date linearly.
+        """
         started_row = CourseMeta.query.filter_by(key='started_at').first()
         planned_row = CourseMeta.query.filter_by(key='planned_end').first()
         if not started_row or not planned_row:
@@ -45,19 +50,17 @@ def create_app():
             ChecklistItem.is_checked == True
         ).count()
 
-        days_elapsed = max((today - started_at).days, 1)
+        planned_days = max((planned_end - started_at).days, 1)
+        items_per_day = total_items / planned_days
 
-        if checked_items == 0:
-            # No progress yet — assume original plan
-            projected_end = planned_end
-        elif checked_items >= total_items:
-            # Done!
+        if checked_items >= total_items:
             projected_end = today
+        elif checked_items == 0:
+            projected_end = planned_end
         else:
-            items_per_day = checked_items / days_elapsed
             remaining = total_items - checked_items
-            days_remaining = math.ceil(remaining / items_per_day)
-            projected_end = today + timedelta(days=days_remaining)
+            days_to_finish = math.ceil(remaining / items_per_day)
+            projected_end = today + timedelta(days=days_to_finish)
 
         delay_days = max((projected_end - planned_end).days, 0)
 
