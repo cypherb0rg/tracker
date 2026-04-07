@@ -12,7 +12,6 @@ function updateTimeline(tl) {
             delayEl.textContent = '+' + tl.delay_days + 'd';
             delayEl.className = 'timeline-delay delay-' + tl.delay_level;
         } else if (onTrack) {
-            // Switch from "on track" to delay badge
             onTrack.textContent = '+' + tl.delay_days + 'd';
             onTrack.className = 'timeline-delay delay-' + tl.delay_level;
         }
@@ -100,7 +99,6 @@ document.querySelectorAll('.reflection-textarea').forEach(textarea => {
 function togglePhase(phaseId) {
     const group = document.querySelector(`[data-phase-id="${phaseId}"]`);
     const weeksList = group.querySelector('.weeks-list');
-    const phaseBtn = group.querySelector('.phase-btn');
 
     weeksList.classList.toggle('show');
     group.classList.toggle('active');
@@ -136,11 +134,22 @@ function togglePhase(phaseId) {
         toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 5000);
     }
 
+    function handleDarkModeClick() {
+        var idx = Math.floor(Math.random() * comebacks.length);
+        showToast(comebacks[idx]);
+    }
+
     var btn = document.getElementById("darkModeToggle");
-    if (btn) {
-        btn.addEventListener("click", function () {
-            var idx = Math.floor(Math.random() * comebacks.length);
-            showToast(comebacks[idx]);
+    var btnMobile = document.getElementById("darkModeToggleMobile");
+    if (btn) btn.addEventListener("click", handleDarkModeClick);
+    if (btnMobile) btnMobile.addEventListener("click", handleDarkModeClick);
+
+    // Mobile menu
+    var hamburger = document.getElementById("navHamburger");
+    var mobileMenu = document.getElementById("mobileMenu");
+    if (hamburger && mobileMenu) {
+        hamburger.addEventListener("click", function () {
+            mobileMenu.classList.toggle("open");
         });
     }
 })();

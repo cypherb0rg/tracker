@@ -1,21 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSA Tracker</title>
+    <title>DSA Tracker — adamcoding.com</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%230a0a0f'/><text x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300e88f' text-anchor='middle'>ac</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>window.__PREFIX = {{ request.script_root|tojson }};</script>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="https://adamcoding.com/" class="nav-logo">
+                <span class="logo-bracket">{</span>adam<span class="logo-accent">coding</span><span class="logo-bracket">}</span>
+            </a>
+            <div class="nav-links">
+                <a href="https://adamcoding.com/" class="nav-link">~/home</a>
+                <a href="https://adamcoding.com/about" class="nav-link">~/about</a>
+                <a href="https://adamcoding.com/projects" class="nav-link">~/projects</a>
+                <a href="https://adamcoding.com/blog" class="nav-link">~/blog</a>
+                <a href="{{ url_for('index') }}" class="nav-link active">~/tracker</a>
+                <a href="https://adamcoding.com/uses" class="nav-link">~/uses</a>
+                <a href="https://adamcoding.com/contact" class="nav-link">~/contact</a>
+                <button class="dark-mode-btn" id="darkModeToggle" title="Toggle light mode">☀️</button>
+            </div>
+            <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="https://adamcoding.com/" class="nav-link">~/home</a>
+        <a href="https://adamcoding.com/about" class="nav-link">~/about</a>
+        <a href="https://adamcoding.com/projects" class="nav-link">~/projects</a>
+        <a href="https://adamcoding.com/blog" class="nav-link">~/blog</a>
+        <a href="{{ url_for('index') }}" class="nav-link active">~/tracker</a>
+        <a href="https://adamcoding.com/uses" class="nav-link">~/uses</a>
+        <a href="https://adamcoding.com/contact" class="nav-link">~/contact</a>
+        <button class="dark-mode-btn" id="darkModeToggleMobile">☀️</button>
+    </div>
+
+    <div class="toast" id="darkModeToast"></div>
+
     <div class="container">
         <header>
             <div class="header-content">
                 <h1>DSA Tracker</h1>
-                <a href="https://adamcoding.com" target="_blank" class="back-link">← adamcoding.com</a>
-                <button class="dark-mode-btn" id="darkModeToggle" title="Toggle light mode">☀️</button>
                 <form class="search-form" action="{{ url_for('search') }}" method="get" role="search">
                     <input class="search-input"
                            type="search"
@@ -84,6 +118,5 @@
     </div>
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
-    <div id="darkModeToast" class="toast"></div>
 </body>
 </html>
