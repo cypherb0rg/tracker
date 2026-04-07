@@ -17,7 +17,7 @@
     <div class="weeks-grid">
         {% for week in weeks %}
             <div class="week-card">
-                <a href="/week/{{ week.id }}" class="week-card-link">
+                <a href="{{ url_for('week_view', week_id=week.id) }}" class="week-card-link">
                     <h3>Week {{ week.number }}</h3>
                     <p class="week-title">{{ week.title }}</p>
                     <p class="week-date">{{ week.date_range }}</p>

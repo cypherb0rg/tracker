@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+    <script>window.__PREFIX = {{ request.script_root|tojson }};</script>
 </head>
 <body>
     <div class="container">
@@ -24,7 +25,7 @@
                         <span class="theme-icon">☾</span>
                     </span>
                 </label>
-                <form class="search-form" action="/search" method="get" role="search">
+                <form class="search-form" action="{{ url_for('search') }}" method="get" role="search">
                     <input class="search-input"
                            type="search"
                            name="q"
@@ -74,7 +75,7 @@
                             </button>
                             <div class="weeks-list {% if p.id == phase.id %}show{% endif %}">
                                 {% for w in p.weeks %}
-                                    <a href="/week/{{ w.id }}"
+                                    <a href="{{ url_for('week_view', week_id=w.id) }}"
                                        class="week-link {% if w.id == week.id %}active{% endif %}">
                                         Wk {{ w.number }} · {{ w.title[8:30] if w.title|length > 8 else w.title }}
                                     </a>

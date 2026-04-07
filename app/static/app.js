@@ -31,7 +31,7 @@ function updateTimeline(tl) {
 async function toggleItem(itemId) {
     const checkbox = document.querySelector(`input[data-id="${itemId}"]`);
     try {
-        const response = await fetch(`/api/item/${itemId}`, {
+        const response = await fetch(`${window.__PREFIX || ""}/api/item/${itemId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -50,7 +50,7 @@ async function toggleItem(itemId) {
 async function toggleMastery(masteryId) {
     const checkbox = document.querySelector(`input[data-id="${masteryId}"]`);
     try {
-        const response = await fetch(`/api/mastery/${masteryId}`, {
+        const response = await fetch(`${window.__PREFIX || ""}/api/mastery/${masteryId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -77,7 +77,7 @@ document.querySelectorAll('.reflection-textarea').forEach(textarea => {
 
         reflectionDebounce[blockId] = setTimeout(async () => {
             try {
-                const response = await fetch(`/api/block/${blockId}/reflection`, {
+                const response = await fetch(`${window.__PREFIX || ""}/api/block/${blockId}/reflection`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reflection: textarea.value })

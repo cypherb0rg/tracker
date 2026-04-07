@@ -15,7 +15,7 @@
         <ul class="search-results">
             {% for r in results %}
                 <li class="search-result-item">
-                    <a href="/week/{{ r.week.id }}#block-{{ r.block.id }}" class="result-link">
+                    <a href="{{ url_for('week_view', week_id=r.week.id) }}#block-{{ r.block.id }}" class="result-link">
                         <div class="result-main">
                             <span class="result-label">{{ r.item.label }}</span>
                             {% if r.item.difficulty %}

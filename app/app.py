@@ -1,12 +1,24 @@
 import os
 from datetime import date, timedelta
 import math
-from flask import Flask, render_template, jsonify, request, redirect
+from flask import Flask, render_template, jsonify, request, redirect, url_for as flask_url_for
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Phase, Week, DayBlock, ChecklistItem, PhaseMastery, CourseMeta
 from dotenv import load_dotenv
 
 load_dotenv()
+
+class PrefixMiddleware:
+    """Strip SCRIPT_NAME prefix so Flask routes match, while keeping prefix in url_for."""
+    def __init__(self, app, prefix):
+        self.app = app
+        self.prefix = prefix
+
+    def __call__(self, environ, start_response):
+        if environ.get('PATH_INFO', '').startswith(self.prefix):
+            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):] or '/'
+            environ['SCRIPT_NAME'] = self.prefix
+        return self.app(environ, start_response)
 
 
 def create_app():
@@ -92,8 +104,8 @@ def create_app():
         """Redirect to Phase 1"""
         phase = Phase.query.filter_by(number=1).first()
         if phase:
-            return redirect(f'/phase/{phase.id}')
-        return redirect('/phase/1')
+            return redirect(flask_url_for('phase_view', phase_id=phase.id))
+        return redirect(flask_url_for('phase_view', phase_id=1))
 
     @app.route('/phase/<int:phase_id>')
     def phase_view(phase_id):
@@ -213,6 +225,10 @@ def create_app():
         block.reflection = data.get('reflection', '')
         db.session.commit()
         return jsonify({'id': block.id, 'reflection': block.reflection}), 200
+
+    prefix = os.getenv('APP_PREFIX', '')
+    if prefix:
+        app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix)
 
     return app
 
