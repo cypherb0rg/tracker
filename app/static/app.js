@@ -106,19 +106,43 @@ function togglePhase(phaseId) {
     group.classList.toggle('active');
 }
 
-// Theme toggle
+// Dark Mode Only. No Exceptions.
 (function () {
-    const toggle = document.getElementById('themeToggle');
-    if (!toggle) return;
+    const comebacks = [
+        "You wish! \ud83c\udf11",
+        "Nice try. We don\u2019t do light mode here.",
+        "Light mode? In this economy?",
+        "404: Light Mode Not Found.",
+        "I admire your optimism. No.",
+        "Even my terminal said no.",
+        "The dark side has cookies. Stay.",
+        "Light mode is just dark mode with a sunburn.",
+        "My CSS refuses. I asked.",
+        "sudo enable-light-mode \u2192 Permission denied.",
+        "Have you tried turning your monitor brightness up instead?",
+        "Light mode was deprecated in adamcoding v0.0.1",
+        "Roses are red, violets are blue, light mode is off, and so are you \ud83d\udda4",
+        "I\u2019d enable light mode but my therapist said to set boundaries.",
+        "You\u2019ve been denied. Again. Want a cookie? \ud83c\udf6a",
+    ];
 
-    // Sync checkbox to current theme
-    toggle.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+    var toastTimer = null;
 
-    toggle.addEventListener('change', () => {
-        const dark = toggle.checked;
-        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-        localStorage.setItem('theme', dark ? 'dark' : 'light');
-    });
+    function showToast(message) {
+        var toast = document.getElementById("darkModeToast");
+        if (toastTimer) clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("show");
+        toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 5000);
+    }
+
+    var btn = document.getElementById("darkModeToggle");
+    if (btn) {
+        btn.addEventListener("click", function () {
+            var idx = Math.floor(Math.random() * comebacks.length);
+            showToast(comebacks[idx]);
+        });
+    }
 })();
 
 // Auto-expand current phase

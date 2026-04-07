@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
     <script>window.__PREFIX = {{ request.script_root|tojson }};</script>
 </head>
 <body>
@@ -15,16 +14,8 @@
         <header>
             <div class="header-content">
                 <h1>DSA Tracker</h1>
-                <label class="theme-switch" title="Toggle dark mode">
-                    <input type="checkbox" id="themeToggle">
-                    <span class="theme-switch-track">
-                        <span class="theme-switch-thumb"></span>
-                    </span>
-                    <span class="theme-switch-icons">
-                        <span class="theme-icon">☀</span>
-                        <span class="theme-icon">☾</span>
-                    </span>
-                </label>
+                <a href="https://adamcoding.com" target="_blank" class="back-link">← adamcoding.com</a>
+                <button class="dark-mode-btn" id="darkModeToggle" title="Toggle light mode">☀️</button>
                 <form class="search-form" action="{{ url_for('search') }}" method="get" role="search">
                     <input class="search-input"
                            type="search"
@@ -93,5 +84,6 @@
     </div>
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <div id="darkModeToast" class="toast"></div>
 </body>
 </html>
