@@ -33,7 +33,7 @@ Open [http://localhost:8080](http://localhost:8080)
 - Difficulty badges (Easy / Medium / Hard)
 - Direct links to every problem and resource
 - Full-text search across all topics and problems
-- Light/dark mode toggle
+- Dark mode only. No exceptions.
 
 ## Stack
 
@@ -49,11 +49,11 @@ Open [http://localhost:8080](http://localhost:8080)
 
 ```
 ├── docker-compose.yml
-├── .env.example
 └── app/
-    ├── app.py          # Flask routes
-    ├── models.py       # SQLAlchemy models
-    ├── seed.py         # Idempotent DB seed
+    ├── app.py           # Flask routes
+    ├── models.py        # SQLAlchemy models
+    ├── seed.py          # Idempotent DB seed
+    ├── reset_dates.py   # Reset all date ranges to a new start date
     ├── templates/
     └── static/
 ```
@@ -67,9 +67,29 @@ docker-compose down -v           # stop + wipe database
 docker-compose restart web       # reload after code changes
 ```
 
+## Resetting Course Dates
+
+All phase, week, and day block date ranges can be reset to start from any date without touching progress (checked items, reflections, etc.).
+
+**Reset to today:**
+
+```bash
+docker exec adamcodingcom-tracker-1 python3 /app/reset_dates.py
+```
+
+**Reset to a specific date:**
+
+```bash
+docker exec adamcodingcom-tracker-1 python3 /app/reset_dates.py 2026-09-01
+```
+
+The script recalculates the full 104-day plan (5 phases, 14 weeks, all day blocks) from the given start date and updates `CourseMeta` (`started_at` and `planned_end`) accordingly. The container name may differ if you are running the tracker standalone — check with `docker ps`.
+
+If you need to change the course structure itself (phase lengths, block durations), edit the offset tables at the top of `app/reset_dates.py`.
+
 ## Customisation
 
-Add content by editing `app/seed.py`, then:
+Add or change course content by editing `app/seed.py`, then:
 
 ```bash
 docker-compose restart web
