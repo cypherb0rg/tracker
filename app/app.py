@@ -6,6 +6,69 @@ from flask_sqlalchemy import SQLAlchemy
 from models import db, Phase, Week, DayBlock, ChecklistItem, PhaseMastery, CourseMeta
 from dotenv import load_dotenv
 
+
+# ── Dynamic date computation ─────────────────────────────────────────────────
+# Offset tables: same structure as reset_dates.py but used at render time
+# so dates always reflect today as the start.
+
+PHASE_OFFSETS = {
+    1: (0,  13),
+    2: (14, 34),
+    3: (35, 55),
+    4: (56, 76),
+    5: (77, 103),
+}
+
+WEEK_OFFSETS = {
+    1:  (0,   6),   2:  (7,  13),  3:  (14, 20),  4:  (21, 27),
+    5:  (28, 34),   6:  (35, 41),  7:  (42, 48),  8:  (49, 55),
+    9:  (56, 62),  10:  (63, 69), 11:  (70, 76), 12:  (77, 83),
+    13: (84, 90),  14:  (91, 103),
+}
+
+BLOCK_OFFSETS = {
+    (1, 0): (0, 0),    (1, 1): (0, 1),    (1, 2): (2, 3),
+    (1, 3): (4, 5),    (1, 4): (6, 6),
+    (2, 1): (7, 8),    (2, 2): (9, 10),   (2, 3): (11, 13),
+    (3, 1): (14, 15),  (3, 2): (16, 17),  (3, 3): (18, 20),
+    (4, 1): (21, 23),  (4, 2): (24, 25),  (4, 3): (26, 27),
+    (5, 1): (28, 30),  (5, 2): (31, 32),  (5, 3): (33, 34),
+    (6, 1): (35, 36),  (6, 2): (37, 38),  (6, 3): (39, 41),
+    (7, 1): (42, 44),  (7, 2): (45, 46),  (7, 3): (47, 48),
+    (8, 1): (49, 51),  (8, 2): (52, 55),
+    (9, 1): (56, 58),  (9, 2): (59, 60),  (9, 3): (61, 62),
+    (10, 1): (63, 65), (10, 2): (66, 67), (10, 3): (68, 69),
+    (11, 1): (70, 71), (11, 2): (72, 73), (11, 3): (74, 76),
+    (12, 1): (77, 78), (12, 2): (79, 80), (12, 3): (81, 83),
+    (13, 1): (84, 85), (13, 2): (86, 87), (13, 3): (88, 90),
+    (14, 1): (91, 93), (14, 2): (94, 95), (14, 3): (96, 103),
+}
+
+
+def _fmt_date(d):
+    return d.strftime("%b %-d")
+
+
+def _fmt_range(start, end):
+    if start == end:
+        return _fmt_date(start)
+    if start.month == end.month:
+        return f"{start.strftime('%b')} {start.day}-{end.day}"
+    return f"{_fmt_date(start)} - {_fmt_date(end)}"
+
+
+def dynamic_date_range(today, phase_number=None, week_number=None, block_key=None):
+    """Compute a date range string relative to today as the course start."""
+    if phase_number and phase_number in PHASE_OFFSETS:
+        s, e = PHASE_OFFSETS[phase_number]
+    elif week_number and week_number in WEEK_OFFSETS:
+        s, e = WEEK_OFFSETS[week_number]
+    elif block_key and block_key in BLOCK_OFFSETS:
+        s, e = BLOCK_OFFSETS[block_key]
+    else:
+        return None
+    return _fmt_range(today + timedelta(days=s), today + timedelta(days=e))
+
 load_dotenv()
 
 class PrefixMiddleware:
@@ -34,11 +97,38 @@ def create_app():
     db.init_app(app)
     # Tables are created by seed.py on startup, not here
 
+    def apply_dynamic_dates(phases=None, weeks=None, day_blocks=None):
+        """Override static date_range with dynamically computed dates based on today."""
+        today = date.today()
+        if phases:
+            for p in phases:
+                dr = dynamic_date_range(today, phase_number=p.number)
+                if dr:
+                    p.date_range = dr
+        if weeks:
+            for w in weeks:
+                dr = dynamic_date_range(today, week_number=w.number)
+                if dr:
+                    w.date_range = dr
+        if day_blocks:
+            week_num_cache = {}
+            for b in day_blocks:
+                if b.week_id not in week_num_cache:
+                    w = Week.query.get(b.week_id)
+                    week_num_cache[b.week_id] = w.number if w else None
+                wn = week_num_cache[b.week_id]
+                if wn:
+                    dr = dynamic_date_range(today, block_key=(wn, b.sort_order))
+                    if dr:
+                        b.date_range = dr
+
     def get_all_phases_with_weeks():
         """Helper to get all phases with their weeks"""
         phases = Phase.query.order_by(Phase.number).all()
         for phase in phases:
             phase.weeks = Week.query.filter_by(phase_id=phase.id).order_by(Week.number).all()
+        all_weeks = [w for p in phases for w in p.weeks]
+        apply_dynamic_dates(phases=phases, weeks=all_weeks)
         return phases
 
     def get_timeline():
@@ -53,9 +143,9 @@ def create_app():
         if not started_row or not planned_row:
             return None
 
-        started_at = date.fromisoformat(started_row.value)
-        planned_end = date.fromisoformat(planned_row.value)
         today = date.today()
+        started_at = today
+        planned_end = today + timedelta(days=104)
 
         total_items = ChecklistItem.query.count()
         checked_items = ChecklistItem.query.filter(
@@ -114,6 +204,7 @@ def create_app():
         weeks = Week.query.filter_by(phase_id=phase_id).order_by(Week.number).all()
         mastery_items = PhaseMastery.query.filter_by(phase_id=phase_id).order_by(PhaseMastery.sort_order).all()
         phases = get_all_phases_with_weeks()
+        apply_dynamic_dates(phases=[phase], weeks=weeks)
 
         # Calculate progress
         total_items = ChecklistItem.query.join(DayBlock).join(Week).filter(Week.phase_id == phase_id).count()
@@ -175,6 +266,7 @@ def create_app():
         phase = Phase.query.get(week.phase_id)
         day_blocks = DayBlock.query.filter_by(week_id=week_id).order_by(DayBlock.sort_order).all()
         phases = get_all_phases_with_weeks()
+        apply_dynamic_dates(phases=[phase], weeks=[week], day_blocks=day_blocks)
 
         # Calculate overall progress
         total_items = ChecklistItem.query.count()
