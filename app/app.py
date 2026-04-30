@@ -418,6 +418,37 @@ def create_app():
 
     # ── API Endpoints ────────────────────────────────────────────────────────
 
+    @app.route('/api/user/start-date', methods=['PATCH'])
+    def update_start_date():
+        """Set or reset the user's course start date."""
+        user = get_current_user()
+        if not user:
+            return jsonify({'error': 'Sign in to set start date'}), 401
+
+        data = request.get_json()
+        date_str = data.get('start_date')
+
+        if date_str == 'today' or date_str is None:
+            user.started_at = date.today()
+        else:
+            try:
+                user.started_at = date.fromisoformat(date_str)
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
+
+        db.session.commit()
+
+        tl = get_timeline(user)
+        return jsonify({
+            'started_at': user.started_at.isoformat(),
+            'timeline': {
+                'started_at_short': tl['started_at'].strftime('%b %d'),
+                'projected_end': tl['projected_end'].strftime('%b %d, %Y'),
+                'delay_days': tl['delay_days'],
+                'delay_level': tl['delay_level'],
+            } if tl else None
+        }), 200
+
     @app.route('/api/item/<int:item_id>', methods=['PATCH'])
     def toggle_item(item_id):
         """Toggle checklist item for the logged-in user"""

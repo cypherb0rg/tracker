@@ -26,6 +26,41 @@ function updateTimeline(tl) {
     }
 }
 
+// Start date picker
+function showStartDatePicker() {
+    document.getElementById("startDatePicker").style.display = "flex";
+}
+function hideStartDatePicker() {
+    document.getElementById("startDatePicker").style.display = "none";
+}
+async function setStartDate() {
+    const input = document.getElementById("startDateInput");
+    await updateStartDate(input.value);
+}
+async function resetStartDate() {
+    await updateStartDate("today");
+}
+async function updateStartDate(value) {
+    try {
+        const response = await fetch(`${window.__PREFIX || ""}/api/user/start-date`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ start_date: value })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            updateTimeline(data.timeline);
+            const trigger = document.querySelector(".start-date-trigger");
+            if (trigger && data.timeline) trigger.textContent = data.timeline.started_at_short;
+            const input = document.getElementById("startDateInput");
+            if (input) input.value = data.started_at;
+            hideStartDatePicker();
+        }
+    } catch (e) {
+        console.error("Failed to update start date", e);
+    }
+}
+
 // Toggle item checkbox via AJAX
 async function toggleItem(itemId) {
     if (!window.__IS_AUTH) return;
@@ -171,7 +206,7 @@ function togglePhase(phaseId) {
     }
 })();
 
-// Auto-expand current phase
+// Auto-expand current phase + wire start date trigger
 document.addEventListener("DOMContentLoaded", () => {
     const activeWeek = document.querySelector(".week-link.active");
     if (activeWeek) {
@@ -182,4 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
             weeksList.classList.add("show");
         }
     }
+
+    const startTrigger = document.querySelector(".start-date-trigger");
+    if (startTrigger) startTrigger.addEventListener("click", showStartDatePicker);
 });

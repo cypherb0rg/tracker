@@ -1118,6 +1118,64 @@ header {
     margin-left: 4px;
 }
 
+.start-date-trigger {
+    cursor: pointer;
+    border-bottom: 1px dashed #686878;
+    transition: color 0.2s;
+}
+.start-date-trigger:hover {
+    color: #00e88f;
+    border-bottom-color: #00e88f;
+}
+.start-date-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+.start-date-picker input[type="date"] {
+    background: var(--bg-card);
+    color: var(--text-dark);
+    border: 1px solid var(--text-muted);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    font-family: inherit;
+}
+.start-date-btn {
+    background: #00e88f;
+    color: #0a0a0f;
+    border: none;
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+.start-date-btn:hover {
+    background: #00b870;
+}
+.start-date-reset {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--text-muted);
+}
+.start-date-reset:hover {
+    color: #00e88f;
+    border-color: #00e88f;
+    background: transparent;
+}
+.start-date-cancel {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+}
+.start-date-cancel:hover {
+    color: var(--text-dark);
+}
+
 .timeline-hint {
     font-size: 0.8rem;
     color: #686878;

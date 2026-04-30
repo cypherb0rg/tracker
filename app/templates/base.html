@@ -92,7 +92,9 @@
                 {% if timeline %}
                     <div class="timeline-info">
                         <span class="timeline-dates">
-                            {{ timeline.started_at.strftime('%b %d') }} &rarr;
+                            <span class="start-date-trigger" title="Click to change start date">
+                                {{ timeline.started_at.strftime('%b %d') }}
+                            </span> &rarr;
                             <span class="timeline-projected">{{ timeline.projected_end.strftime('%b %d, %Y') }}</span>
                         </span>
                         {% if timeline.delay_days > 0 %}
@@ -103,6 +105,12 @@
                             <span class="timeline-on-track">on track</span>
                         {% endif %}
                         <span class="timeline-estimate">est. ~2h/day</span>
+                    </div>
+                    <div class="start-date-picker" id="startDatePicker" style="display:none;">
+                        <input type="date" id="startDateInput" value="{{ timeline.started_at.isoformat() }}">
+                        <button class="start-date-btn" onclick="setStartDate()">Set</button>
+                        <button class="start-date-btn start-date-reset" onclick="resetStartDate()">Reset to today</button>
+                        <button class="start-date-btn start-date-cancel" onclick="hideStartDatePicker()">Cancel</button>
                     </div>
                 {% elif not is_authenticated and google_enabled %}
                     <div class="timeline-info">
