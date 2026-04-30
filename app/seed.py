@@ -7,7 +7,7 @@ import time
 from sqlalchemy.exc import OperationalError
 from app import app  # Import the single module-level app instance
 from datetime import date, timedelta
-from models import db, Phase, Week, DayBlock, ChecklistItem, PhaseMastery, CourseMeta
+from models import db, Phase, Week, DayBlock, ChecklistItem, PhaseMastery, CourseMeta, User, UserChecklistProgress, UserMasteryProgress, UserReflection
 
 
 def seed_database():

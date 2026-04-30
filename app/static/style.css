@@ -1066,3 +1066,74 @@ header {
     .search-input:focus { width: 160px; }
     .timeline-info { display: none; }
 }
+
+/* ─── Auth / Sign-in ──────────────────────────────── */
+
+.nav-signin {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 232, 143, 0.12);
+    border: 1px solid rgba(0, 232, 143, 0.25);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    color: #00e88f;
+    transition: all 0.2s ease;
+}
+
+.nav-signin:hover {
+    background: rgba(0, 232, 143, 0.22);
+    color: #00e88f;
+}
+
+.google-icon {
+    flex-shrink: 0;
+}
+
+.nav-user {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: #9898a8;
+    padding: 6px 8px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nav-logout {
+    font-size: 0.78rem;
+    color: #686878;
+}
+
+.nav-logout:hover {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.timeline-estimate {
+    font-size: 0.7rem;
+    color: #686878;
+    margin-left: 4px;
+}
+
+.timeline-hint {
+    font-size: 0.8rem;
+    color: #686878;
+}
+
+.timeline-hint a {
+    color: #00e88f;
+    text-decoration: none;
+}
+
+.timeline-hint a:hover {
+    text-decoration: underline;
+}
+
+/* Disabled checkboxes for anonymous users */
+input[type="checkbox"]:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

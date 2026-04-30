@@ -35,7 +35,8 @@
                         <input type="checkbox"
                                class="mastery-checkbox"
                                data-id="{{ item.id }}"
-                               {% if item.is_checked %}checked{% endif %}
+                               {% if item.id in checked_mastery %}checked{% endif %}
+                               {% if not is_authenticated %}disabled title="Sign in to track progress"{% endif %}
                                onchange="toggleMastery({{ item.id }})">
                         <span>{{ item.label }}</span>
                     </label>

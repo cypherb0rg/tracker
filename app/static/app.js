@@ -28,6 +28,7 @@ function updateTimeline(tl) {
 
 // Toggle item checkbox via AJAX
 async function toggleItem(itemId) {
+    if (!window.__IS_AUTH) return;
     const checkbox = document.querySelector(`input[data-id="${itemId}"]`);
     try {
         const response = await fetch(`${window.__PREFIX || ""}/api/item/${itemId}`, {
@@ -47,6 +48,7 @@ async function toggleItem(itemId) {
 
 // Toggle mastery item checkbox
 async function toggleMastery(masteryId) {
+    if (!window.__IS_AUTH) return;
     const checkbox = document.querySelector(`input[data-id="${masteryId}"]`);
     try {
         const response = await fetch(`${window.__PREFIX || ""}/api/mastery/${masteryId}`, {

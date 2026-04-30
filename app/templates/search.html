@@ -29,7 +29,7 @@
                             </span>
                         </div>
                     </a>
-                    {% if r.item.is_checked %}
+                    {% if r.item.id in checked_items %}
                         <span class="result-checked" title="Completed">✓</span>
                     {% endif %}
                 </li>

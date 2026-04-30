@@ -1,7 +1,58 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, date
 
 db = SQLAlchemy()
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    google_id = db.Column(db.String(255), unique=True, nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    name = db.Column(db.String(255))
+    started_at = db.Column(db.Date, default=date.today)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    checklist_progress = db.relationship('UserChecklistProgress', backref='user', lazy='select', cascade='all, delete-orphan')
+    mastery_progress = db.relationship('UserMasteryProgress', backref='user', lazy='select', cascade='all, delete-orphan')
+    reflections = db.relationship('UserReflection', backref='user', lazy='select', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<User {self.email}>'
+
+
+class UserChecklistProgress(db.Model):
+    __tablename__ = 'user_checklist_progress'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    checklist_item_id = db.Column(db.Integer, db.ForeignKey('checklist_items.id', ondelete='CASCADE'), nullable=False)
+    is_checked = db.Column(db.Boolean, default=True)
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'checklist_item_id'),)
+
+
+class UserMasteryProgress(db.Model):
+    __tablename__ = 'user_mastery_progress'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    mastery_id = db.Column(db.Integer, db.ForeignKey('phase_mastery.id', ondelete='CASCADE'), nullable=False)
+    is_checked = db.Column(db.Boolean, default=True)
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'mastery_id'),)
+
+
+class UserReflection(db.Model):
+    __tablename__ = 'user_reflections'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    day_block_id = db.Column(db.Integer, db.ForeignKey('day_blocks.id', ondelete='CASCADE'), nullable=False)
+    reflection = db.Column(db.Text, default='')
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'day_block_id'),)
 
 
 class Phase(db.Model):

@@ -21,41 +21,19 @@
                     {% set hackerrank_items = block.checklist_items|selectattr('item_type', 'equalto', 'hackerrank')|list %}
                     {% set review_items = block.checklist_items|selectattr('item_type', 'equalto', 'review')|list %}
 
-                    {% if learning_items %}
-                        <div class="items-section learning-section">
-                            <h4>📚 Learning</h4>
+                    {% macro render_items(items, icon, title) %}
+                    {% if items %}
+                        <div class="items-section {{ title|lower }}-section">
+                            <h4>{{ icon }} {{ title }}</h4>
                             <ul class="checklist">
-                                {% for item in learning_items|sort(attribute='sort_order') %}
+                                {% for item in items|sort(attribute='sort_order') %}
                                     <li class="checklist-item">
                                         <label>
                                             <input type="checkbox"
                                                    class="item-checkbox"
                                                    data-id="{{ item.id }}"
-                                                   {% if item.is_checked %}checked{% endif %}
-                                                   onchange="toggleItem({{ item.id }})">
-                                            {% if item.url %}
-                                                <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
-                                            {% else %}
-                                                <span>{{ item.label }}</span>
-                                            {% endif %}
-                                        </label>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
-
-                    {% if leetcode_items %}
-                        <div class="items-section leetcode-section">
-                            <h4>🔗 LeetCode</h4>
-                            <ul class="checklist">
-                                {% for item in leetcode_items|sort(attribute='sort_order') %}
-                                    <li class="checklist-item">
-                                        <label>
-                                            <input type="checkbox"
-                                                   class="item-checkbox"
-                                                   data-id="{{ item.id }}"
-                                                   {% if item.is_checked %}checked{% endif %}
+                                                   {% if item.id in checked_items %}checked{% endif %}
+                                                   {% if not is_authenticated %}disabled title="Sign in to track progress"{% endif %}
                                                    onchange="toggleItem({{ item.id }})">
                                             {% if item.url %}
                                                 <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
@@ -71,67 +49,24 @@
                             </ul>
                         </div>
                     {% endif %}
+                    {% endmacro %}
 
-                    {% if hackerrank_items %}
-                        <div class="items-section hackerrank-section">
-                            <h4>🎯 HackerRank</h4>
-                            <ul class="checklist">
-                                {% for item in hackerrank_items|sort(attribute='sort_order') %}
-                                    <li class="checklist-item">
-                                        <label>
-                                            <input type="checkbox"
-                                                   class="item-checkbox"
-                                                   data-id="{{ item.id }}"
-                                                   {% if item.is_checked %}checked{% endif %}
-                                                   onchange="toggleItem({{ item.id }})">
-                                            {% if item.url %}
-                                                <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
-                                            {% else %}
-                                                <span>{{ item.label }}</span>
-                                            {% endif %}
-                                            {% if item.difficulty %}
-                                                <span class="difficulty {{ item.difficulty|lower }}">{{ item.difficulty }}</span>
-                                            {% endif %}
-                                        </label>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
-
-                    {% if review_items %}
-                        <div class="items-section review-section">
-                            <h4>🔄 Review</h4>
-                            <ul class="checklist">
-                                {% for item in review_items|sort(attribute='sort_order') %}
-                                    <li class="checklist-item">
-                                        <label>
-                                            <input type="checkbox"
-                                                   class="item-checkbox"
-                                                   data-id="{{ item.id }}"
-                                                   {% if item.is_checked %}checked{% endif %}
-                                                   onchange="toggleItem({{ item.id }})">
-                                            {% if item.url %}
-                                                <a href="{{ item.url }}" target="_blank">{{ item.label }}</a>
-                                            {% else %}
-                                                <span>{{ item.label }}</span>
-                                            {% endif %}
-                                        </label>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
+                    {{ render_items(learning_items, "📚", "Learning") }}
+                    {{ render_items(leetcode_items, "🔗", "LeetCode") }}
+                    {{ render_items(hackerrank_items, "🎯", "HackerRank") }}
+                    {{ render_items(review_items, "🔄", "Review") }}
                 </div>
 
+                {% if is_authenticated %}
                 <div class="reflection-section">
                     <label for="reflection-{{ block.id }}">📝 Reflection / Notes:</label>
                     <textarea id="reflection-{{ block.id }}"
                               class="reflection-textarea"
                               data-block-id="{{ block.id }}"
-                              placeholder="Write your thoughts, challenges, and takeaways...">{{ block.reflection }}</textarea>
+                              placeholder="Write your thoughts, challenges, and takeaways...">{{ user_reflections.get(block.id, '') }}</textarea>
                     <span class="save-status" id="status-{{ block.id }}"></span>
                 </div>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
