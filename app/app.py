@@ -103,7 +103,11 @@ def create_app():
         'sqlite:///tracker.db'
     )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
     app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-change-me')
+
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     db.init_app(app)
 
@@ -268,7 +272,11 @@ def create_app():
     def google_login():
         if not google_client_id:
             return 'Google OAuth not configured', 503
-        redirect_uri = flask_url_for('google_callback', _external=True)
+        # Build redirect URI explicitly — url_for may not know the external domain behind proxy
+        domain = os.getenv('DOMAIN', request.host)
+        prefix = os.getenv('APP_PREFIX', '')
+        scheme = 'https' if request.is_secure or os.getenv('APP_PREFIX') else 'http'
+        redirect_uri = f"{scheme}://{domain}{prefix}/auth/google/callback"
         return oauth.google.authorize_redirect(redirect_uri)
 
     @app.route('/auth/google/callback')
